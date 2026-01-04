@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eBay Optimized Listing ✨</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .loading-shimmer {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        .drag-active {
+            border-color: #4f46e5 !important;
+            background-color: #eef2ff !important;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen font-sans text-gray-900 p-4 pb-20">
+
+    <!-- Header -->
+    <div class="max-w-5xl mx-auto flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">eBay Optimizer ✨</h1>
+            <p class="text-xs text-gray-500 font-medium mt-1">Batch Research & Auto-Listing Tool</p>
+        </div>
+        <button onclick="toggleKeyModal()" class="flex items-center gap-2 bg-white border border-gray-200 text-gray-600 px-4 py-2 rounded-xl text-xs font-bold hover:bg-gray-50 shadow-sm transition-all">
+            <span>🔑</span> API Key
+        </button>
+    </div>
+
+    <!-- Main Container -->
+    <div class="max-w-5xl mx-auto">
+        
+        <!-- Upload Area (Split) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            
+            <!-- Left: Single Item (Multi Photo) -->
+            <div id="dropZoneMulti" class="bg-indigo-50 border-2 border-dashed border-indigo-300 rounded-2xl p-8 text-center cursor-pointer hover:border-indigo-500 hover:bg-indigo-100 transition-all group shadow-sm relative overflow-hidden">
+                <input type="file" id="fileInputMulti" class="hidden" multiple accept="image/*">
+                <div class="pointer-events-none space-y-2 relative z-10">
+                    <div class="w-12 h-12 bg-white text-indigo-500 rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm group-hover:scale-110 transition-transform">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        <div class="absolute -right-1 -bottom-1 bg-indigo-600 text-white text-[8px] font-bold px-1 rounded-full">+</div>
+                    </div>
+                    <p class="text-base font-bold text-indigo-900">One Item (Multiple Photos)</p>
+                    <p class="text-xs text-indigo-600">Drop photos here to build a listing.<br><b>Drop again to add more.</b></p>
+                </div>
+            </div>
+
+            <!-- Right: Batch Items (Single Photo) -->
+            <div id="dropZoneBatch" class="bg-white border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all group shadow-sm">
+                <input type="file" id="fileInputBatch" class="hidden" multiple accept="image/*">
+                <div class="pointer-events-none space-y-2">
+                    <div class="w-12 h-12 bg-blue-100 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                    </div>
+                    <p class="text-base font-bold text-gray-600">Batch Items (1 Photo Each)</p>
+                    <p class="text-xs text-gray-400">Creates a separate listing for each file dropped.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bulk Actions Bar -->
+        <div id="bulkActions" class="hidden flex flex-col md:flex-row gap-4 mb-8">
+            <button id="researchAllBtn" onclick="researchAll()" class="hidden flex-1 bg-blue-600 text-white font-bold py-4 rounded-2xl shadow-lg hover:bg-blue-700 transition-all active:scale-95 flex items-center justify-center gap-2 text-lg">
+                <span class="text-2xl">🚀</span> Research All Pending
+            </button>
+            <button id="sendAllBtn" onclick="sendAllGmail()" class="hidden flex-1 bg-red-600 text-white font-bold py-4 rounded-2xl shadow-lg hover:bg-red-700 transition-all active:scale-95 flex items-center justify-center gap-2 text-lg">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"/></svg>
+                Send All Completed
+            </button>
+        </div>
+
+        <!-- Grid Layout for Items -->
+        <div id="itemsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Items injected here via JS -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="text-center py-16">
+            <p class="text-gray-400 text-sm">No items in queue. Upload photos above to start.</p>
+        </div>
+    </div>
+
+    <!-- API Key Modal -->
+    <div id="keyModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl p-8 w-full max-w-sm shadow-2xl transform transition-all scale-100">
+            <div class="text-center mb-6">
+                <div class="mx-auto w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mb-3">
+                    <span class="text-2xl">🔑</span>
+                </div>
+                <h3 class="font-bold text-xl text-gray-800">API Key Required</h3>
+                <p class="text-xs text-gray-500 mt-2 leading-relaxed">
+                    To use this tool without limits, please paste your free Google Gemini API Key below.
+                    <br>
+                    <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-600 underline font-bold hover:text-blue-800">Get a Free Key Here</a>
+                </p>
+            </div>
+            <input type="text" id="apiKeyInput" class="w-full border-2 border-gray-200 p-3 rounded-xl mb-4 text-sm text-center focus:border-indigo-500 focus:ring-0 outline-none transition-colors" placeholder="Paste key starting with AIza...">
+            <button onclick="saveKey()" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700 shadow-md hover:shadow-lg transition-all active:scale-95">Save & Continue</button>
+            <button onclick="toggleKeyModal()" class="w-full mt-3 text-gray-400 text-xs font-bold hover:text-gray-600">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Cost Input Modal -->
+    <div id="costModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl p-8 w-full max-w-sm shadow-2xl transform transition-all scale-100">
+            <div class="text-center mb-6">
+                <div class="mx-auto w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-3">
+                    <span class="text-2xl">💰</span>
+                </div>
+                <h3 class="font-bold text-xl text-gray-800">Purchase Cost</h3>
+                <p class="text-xs text-gray-500 mt-2">Enter the amount you paid for this item to calculate accurate profits.</p>
+            </div>
+            <div class="relative mb-4">
+                <span class="absolute left-4 top-3 text-gray-500 font-bold">$</span>
+                <input type="number" id="costInput" class="w-full border-2 border-gray-200 p-3 pl-8 rounded-xl text-lg font-bold text-center focus:border-green-500 focus:ring-0 outline-none transition-colors" placeholder="0.00" step="0.01">
+            </div>
+            <button onclick="confirmCost()" class="w-full bg-green-600 text-white font-bold py-3 rounded-xl hover:bg-green-700 shadow-md hover:shadow-lg transition-all active:scale-95">Start Research</button>
+            <button onclick="closeCostModal()" class="w-full mt-3 text-gray-400 text-xs font-bold hover:text-gray-600">Skip / Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        // --- Configuration ---
+        let apiKey = localStorage.getItem('gemini_api_key_v2') || "AIzaSyCf7L5B4uNxQy8a9-3MfGK7AYkCqHBg-Wc";
+        let items = [];
+        let pendingResearchId = null;
+
+        // --- DOM Elements ---
+        const dropZoneMulti = document.getElementById('dropZoneMulti');
+        const fileInputMulti = document.getElementById('fileInputMulti');
+        const dropZoneBatch = document.getElementById('dropZoneBatch');
+        const fileInputBatch = document.getElementById('fileInputBatch');
+        
+        const itemsGrid = document.getElementById('itemsGrid');
+        const emptyState = document.getElementById('emptyState');
+        const keyModal = document.getElementById('keyModal');
+        const apiKeyInput = document.getElementById('apiKeyInput');
+        const bulkActions = document.getElementById('bulkActions');
+        const researchAllBtn = document.getElementById('researchAllBtn');
+        const sendAllBtn = document.getElementById('sendAllBtn');
+
+        // --- Event Listeners ---
+        dropZoneMulti.onclick = () => fileInputMulti.click();
+        dropZoneBatch.onclick = () => fileInputBatch.click();
+        
+        fileInputMulti.onchange = async (e) => {
+            if (e.target.files.length) {
+                await processFiles(Array.from(e.target.files), 'single');
+                fileInputMulti.value = ''; 
+            }
+        };
+
+        fileInputBatch.onchange = async (e) => {
+            if (e.target.files.length) {
+                await processFiles(Array.from(e.target.files), 'batch');
+                fileInputBatch.value = ''; 
+            }
+        };
+
+        // Drag & Drop Handling
+        dropZoneMulti.ondragover = (e) => { e.preventDefault(); dropZoneMulti.classList.add('border-indigo-500', 'bg-indigo-100'); };
+        dropZoneMulti.ondragleave = () => { dropZoneMulti.classList.remove('border-indigo-500', 'bg-indigo-100'); };
+        dropZoneMulti.ondrop = async (e) => {
+            e.preventDefault();
+            dropZoneMulti.classList.remove('border-indigo-500', 'bg-indigo-100');
+            await processFiles(Array.from(e.dataTransfer.files), 'single');
+        };
+
+        dropZoneBatch.ondragover = (e) => { e.preventDefault(); dropZoneBatch.classList.add('border-blue-500', 'bg-blue-50'); };
+        dropZoneBatch.ondragleave = () => { dropZoneBatch.classList.remove('border-blue-500', 'bg-blue-50'); };
+        dropZoneBatch.ondrop = async (e) => {
+            e.preventDefault();
+            dropZoneBatch.classList.remove('border-blue-500', 'bg-blue-50');
+            await processFiles(Array.from(e.dataTransfer.files), 'batch');
+        };
+
+
+        // --- Core Application Logic ---
+
+        function resizeAndCompressImage(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        const MAX_SIZE = 1024;
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > height) { if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; } } 
+                        else { if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; } }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        ctx.fillStyle = "#FFFFFF";
+                        ctx.fillRect(0, 0, width, height);
+                        ctx.drawImage(img, 0, 0, width, height);
+                        resolve(canvas.toDataURL('image/jpeg', 0.8));
+                    };
+                    img.onerror = reject;
+                    img.src = e.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function processFiles(files, mode) {
+            emptyState.classList.add('hidden');
+            
+            if (mode === 'single') {
+                // Check if top item is pending and was created in 'single' mode
+                const topItem = items.length > 0 ? items[0] : null;
+                
+                if (topItem && topItem.status === 'pending' && topItem.type === 'single') {
+                    // Append to existing pending item
+                    await appendImagesToItem(topItem.id, files);
+                } else {
+                    // Create NEW item
+                    const id = Date.now() + Math.random().toString(36).substr(2, 9);
+                    const item = { 
+                        id, 
+                        type: 'single',
+                        files, 
+                        images: [], 
+                        status: 'compressing', 
+                        buyCost: '', 
+                        shipCost: '', 
+                        userNotes: '', 
+                        additionalNotes: '',
+                        listingMods: '',
+                        file_name_display: files.length + " Photos"
+                    };
+                    
+                    items.unshift(item);
+                    render();
+
+                    try {
+                        const processedImages = [];
+                        for(const f of files) {
+                            const jpegDataUrl = await resizeAndCompressImage(f);
+                            processedImages.push({
+                                preview: jpegDataUrl,
+                                base64: jpegDataUrl.split(',')[1]
+                            });
+                        }
+                        
+                        const index = items.findIndex(i => i.id === id);
+                        if (index !== -1) {
+                            items[index] = { 
+                                ...items[index], 
+                                images: processedImages,
+                                preview: processedImages[0].preview,
+                                status: 'pending' 
+                            };
+                        }
+                    } catch (e) {
+                        const index = items.findIndex(i => i.id === id);
+                        if (index !== -1) { items[index].status = 'error'; items[index].errorMsg = "Image Error"; }
+                    }
+                    render();
+                }
+
+            } else {
+                // Batch Mode: One item per file
+                for (const file of files) {
+                    const id = Date.now() + Math.random().toString(36).substr(2, 9);
+                    items.unshift({ 
+                        id,
+                        type: 'batch',
+                        status: 'compressing', 
+                        buyCost: '', 
+                        shipCost: '', 
+                        userNotes: '', 
+                        additionalNotes: '',
+                        listingMods: '',
+                        images: [],
+                        file_name_display: file.name
+                    });
+                    render();
+
+                    try {
+                        const jpegDataUrl = await resizeAndCompressImage(file);
+                        const index = items.findIndex(i => i.id === id);
+                        if (index !== -1) {
+                            items[index] = { 
+                                ...items[index], 
+                                images: [{preview: jpegDataUrl, base64: jpegDataUrl.split(',')[1]}],
+                                preview: jpegDataUrl, 
+                                status: 'pending' 
+                            };
+                        }
+                    } catch (e) {
+                        const index = items.findIndex(i => i.id === id);
+                        if (index !== -1) { items[index].status = 'error'; items[index].errorMsg = "Image Error"; }
+                    }
+                    render();
+                }
+            }
+        }
+
+        async function appendImagesToItem(itemId, files) {
+            const item = items.find(i => i.id === itemId);
+            if (!item) return;
+
+            // Simple visual cue could be added, but for now just process
+            for (const file of files) {
+                try {
+                    const jpegDataUrl = await resizeAndCompressImage(file);
+                    item.images.push({
+                        preview: jpegDataUrl,
+                        base64: jpegDataUrl.split(',')[1]
+                    });
+                } catch(e) { console.error(e); }
+            }
+            render();
+        }
+
+        function triggerAddPhotos(itemId) {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.multiple = true;
+            input.accept = 'image/*';
+            input.onchange = async (e) => {
+                if (e.target.files.length) {
+                    await appendImagesToItem(itemId, Array.from(e.target.files));
+                }
+            };
+            input.click();
+        }
+
+        // Drag Drop Handlers for Cards
+        function handleCardDragOver(e, id) {
+            e.preventDefault();
+            e.stopPropagation();
+            document.getElementById(`card-${id}`).classList.add('drag-active');
+        }
+        
+        function handleCardDragLeave(e, id) {
+            e.preventDefault();
+            e.stopPropagation();
+            document.getElementById(`card-${id}`).classList.remove('drag-active');
+        }
+
+        async function handleCardDrop(e, id) {
+            e.preventDefault();
+            e.stopPropagation();
+            document.getElementById(`card-${id}`).classList.remove('drag-active');
+            const files = Array.from(e.dataTransfer.files);
+            if (files.length) {
+                await appendImagesToItem(id, files);
+            }
+        }
+
+        window.updateItemNotes = function(id, value) {
+            const item = items.find(i => i.id === id);
+            if (item) item.userNotes = value;
+        }
+
+        window.updateAdditionalNotes = function(id, value) {
+            const item = items.find(i => i.id === id);
+            if (item) item.additionalNotes = value;
+        }
+        
+        window.updateListingMods = function(id, value) {
+            const item = items.find(i => i.id === id);
+            if (item) item.listingMods = value;
+        }
+
+        window.updateItemCost = function(id, field, value) {
+            const item = items.find(i => i.id === id);
+            if (item) {
+                item[field] = value;
+                const profitEl = document.getElementById(`profit-${id}`);
+                const containerEl = document.getElementById(`profit-container-${id}`);
+                
+                if (profitEl && item.data && item.data.suggestedPrice) {
+                    const sellPrice = parseFloat(item.data.suggestedPrice.replace(/[^0-9.]/g, '')) || 0;
+                    const buyCost = parseFloat(item.buyCost) || 0;
+                    const shipCost = parseFloat(item.shipCost) || 0;
+                    
+                    // eBay Fees: ~13.25% + $0.30 fixed
+                    const fees = (sellPrice * 0.1325) + 0.30;
+                    const profit = sellPrice - fees - shipCost - buyCost;
+                    
+                    profitEl.innerText = '$' + profit.toFixed(2);
+                    
+                    if (profit > 0) {
+                        profitEl.className = "text-xl font-black text-green-600";
+                        containerEl.classList.remove('border-red-200', 'bg-red-50');
+                        containerEl.classList.add('border-green-200', 'bg-green-50');
+                    } else {
+                        profitEl.className = "text-xl font-black text-red-500";
+                        containerEl.classList.remove('border-green-200', 'bg-green-50');
+                        containerEl.classList.add('border-red-200', 'bg-red-50');
+                    }
+                }
+            }
+            render(); 
+        }
+
+        function render() {
+            // Update Bulk Actions Visibility
+            const pendingCount = items.filter(i => i.status === 'pending').length;
+            const doneCount = items.filter(i => i.status === 'done').length;
+            
+            if (pendingCount > 0 || doneCount > 0) {
+                bulkActions.classList.remove('hidden');
+                if (pendingCount > 1) { 
+                    researchAllBtn.classList.remove('hidden');
+                    researchAllBtn.querySelector('span').innerText = `🚀`;
+                    researchAllBtn.childNodes[2].nodeValue = ` Research All (${pendingCount})`;
+                } else {
+                    researchAllBtn.classList.add('hidden');
+                }
+                if (doneCount > 0) {
+                    sendAllBtn.classList.remove('hidden');
+                } else {
+                    sendAllBtn.classList.add('hidden');
+                }
+            } else {
+                bulkActions.classList.add('hidden');
+            }
+
+
+            itemsGrid.innerHTML = items.map(item => {
+                let content = '';
+                let statusBadge = '';
+                let titleHtml = '';
+
+                if (item.status === 'compressing') {
+                    return `<div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center justify-center gap-3 animate-pulse h-40"><div class="w-5 h-5 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div><span class="text-xs font-bold text-gray-400 uppercase">Optimizing...</span></div>`;
+                }
+
+                if (item.status === 'pending') {
+                    statusBadge = `<span class="bg-gray-100 text-gray-500 text-[10px] font-extrabold px-2 py-1 rounded-md">READY</span>`;
+                    
+                    let thumbnails = '';
+                    if(item.images && item.images.length > 0) {
+                         thumbnails = `
+                            <div class="flex flex-wrap gap-2 mt-2 mb-2">
+                                ${item.images.map(img => `<img src="${img.preview}" class="w-12 h-12 rounded border border-gray-200 object-cover">`).join('')}
+                                <button onclick="triggerAddPhotos('${item.id}')" class="w-12 h-12 rounded border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 hover:text-blue-500 hover:border-blue-500 transition-colors">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                </button>
+                            </div>
+                            <p class="text-[9px] text-center text-gray-400 mb-2">Drag photos here to add more</p>
+                         `;
+                    }
+
+                    content = `
+                        <div class="mt-2">
+                            ${thumbnails}
+                            <div class="mt-2">
+                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Specific Details (Optional)</label>
+                                <textarea 
+                                    class="w-full text-sm p-3 border border-gray-200 rounded-lg mb-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none bg-gray-50" 
+                                    rows="2" 
+                                    placeholder="e.g. 'Scratches on screen', 'Tested working', 'Missing remote'"
+                                    oninput="updateItemNotes('${item.id}', this.value)"
+                                >${item.userNotes || ''}</textarea>
+                                
+                                <button onclick="openCostModal('${item.id}')" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl text-sm hover:bg-blue-700 shadow-md transition-all active:scale-95 flex items-center justify-center gap-2">
+                                    <span>🚀</span> Start Research
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                } else if (item.status === 'loading') {
+                    statusBadge = `<span class="bg-blue-50 text-blue-600 text-[10px] font-extrabold px-2 py-1 rounded-md animate-pulse">ANALYZING...</span>`;
+                    content = `<div class="mt-4 space-y-3"><div class="h-4 w-3/4 loading-shimmer rounded-md"></div><div class="h-4 w-1/2 loading-shimmer rounded-md"></div><div class="h-10 w-full loading-shimmer rounded-lg mt-3"></div></div>`;
+                } else if (item.status === 'error') {
+                    statusBadge = `<span class="bg-red-50 text-red-500 text-[10px] font-extrabold px-2 py-1 rounded-md">ERROR</span>`;
+                    content = `<div class="mt-4 bg-red-50 border border-red-100 p-3 rounded-lg"><p class="text-xs text-red-600 font-medium mb-2">${item.errorMsg}</p><button onclick="analyzeItem('${item.id}')" class="text-xs bg-white border border-red-200 text-red-600 px-3 py-1.5 rounded-md font-bold">Retry</button></div>`;
+                } else if (item.status === 'done') {
+                    statusBadge = `<span class="bg-green-50 text-green-600 text-[10px] font-extrabold px-2 py-1 rounded-md">COMPLETE</span>`;
+                    
+                    // Generate Title HTML
+                    titleHtml = `
+                        <div class="bg-blue-50/50 p-4 border-b border-blue-100">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="text-[10px] font-bold text-blue-400 uppercase tracking-wide">Generated Title</span>
+                                <button onclick="copyToClip('${item.data.title.replace(/'/g, "\\'")}', this)" class="text-[10px] font-bold text-blue-600 hover:text-blue-800">COPY</button>
+                            </div>
+                            <p class="text-sm font-bold text-gray-900 leading-snug">${item.data.title}</p>
+                        </div>
+                    `;
+
+                    // Initial Profit Calculation
+                    const sellPrice = parseFloat(item.data.suggestedPrice.replace(/[^0-9.]/g, '')) || 0;
+                    const buyCost = parseFloat(item.buyCost) || 0;
+                    const shipCost = parseFloat(item.shipCost) || 0;
+                    const fees = (sellPrice * 0.1325) + 0.30;
+                    const profit = sellPrice - fees - shipCost - buyCost;
+                    const profitColor = profit > 0 ? "text-green-600" : "text-red-500";
+                    const containerColor = profit > 0 ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200";
+                    
+                    const searchUrl = `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(item.data.title)}&LH_Sold=1&LH_Complete=1`;
+
+                    content = `
+                        <div class="mt-4 space-y-4">
+                            <!-- Sales Frequency & Link Row -->
+                            <div class="grid grid-cols-3 gap-2">
+                                <div class="bg-indigo-50 p-2 rounded-lg border border-indigo-100 text-center flex flex-col justify-center">
+                                     <p class="text-[10px] font-bold text-indigo-400 uppercase tracking-wide">Velocity</p>
+                                     <p class="text-xs font-bold text-indigo-800 mt-0.5 leading-tight truncate" title="${item.data.salesFrequency}">${item.data.salesFrequency ? item.data.salesFrequency.split('(')[0].trim() : 'Analyzing'}</p>
+                                     <p class="text-[9px] italic text-indigo-600 mt-0.5 leading-tight">${item.data.monthlySales || ''}</p>
+                                </div>
+                                <a href="${searchUrl}" target="_blank" class="bg-blue-50 p-2 rounded-lg border border-blue-100 text-center flex flex-col justify-center hover:bg-blue-100 transition-colors group/link">
+                                     <p class="text-[10px] font-bold text-blue-400 uppercase tracking-wide group-hover/link:text-blue-500">Market</p>
+                                     <p class="text-xs font-bold text-blue-600 mt-0.5 leading-tight">${item.data.averageSoldPrice || ''} Avg Sold</p>
+                                     <p class="text-[9px] text-blue-400 mt-0.5 flex items-center justify-center gap-1">
+                                        View Solds <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                                     </p>
+                                </a>
+                                <div class="bg-purple-50 p-2 rounded-lg border border-purple-100 text-center flex flex-col justify-center">
+                                     <p class="text-[10px] font-bold text-purple-400 uppercase tracking-wide">Active</p>
+                                     <p class="text-xs font-bold text-purple-800 mt-0.5 leading-tight">${item.data.activeListings || 'Analyzing...'}</p>
+                                </div>
+                            </div>
+
+                            <!-- Profit Calculator -->
+                            <div id="profit-container-${item.id}" class="${containerColor} p-3 rounded-lg border transition-colors">
+                                <div class="flex justify-between items-center mb-2 border-b border-black/5 pb-2">
+                                    <span class="text-[10px] font-bold uppercase tracking-wide opacity-70">Est. Net Profit</span>
+                                    <span id="profit-${item.id}" class="text-xl font-black ${profitColor}">$${profit.toFixed(2)}</span>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="block text-[9px] font-bold opacity-60 uppercase mb-1">Buy Cost</label>
+                                        <div class="relative">
+                                            <span class="absolute left-2 top-1.5 text-xs opacity-50">$</span>
+                                            <input type="number" value="${item.buyCost}" oninput="updateItemCost('${item.id}', 'buyCost', this.value)" placeholder="0.00" class="w-full pl-5 pr-2 py-1 text-sm bg-white border border-gray-200 rounded focus:ring-1 focus:ring-blue-500 outline-none">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] font-bold opacity-60 uppercase mb-1">Shipping Cost</label>
+                                        <div class="relative">
+                                            <span class="absolute left-2 top-1.5 text-xs opacity-50">$</span>
+                                            <input type="number" value="${item.shipCost}" oninput="updateItemCost('${item.id}', 'shipCost', this.value)" placeholder="0.00" class="w-full pl-5 pr-2 py-1 text-sm bg-white border border-gray-200 rounded focus:ring-1 focus:ring-blue-500 outline-none">
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="text-[9px] opacity-50 mt-2 text-center italic">*Includes est. eBay fees (~13.25%)</p>
+                            </div>
+                            
+                            <!-- Price & UPC Row -->
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="bg-gray-50 p-3 rounded-lg border border-gray-100 group/field hover:border-green-200 transition-colors">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <span class="text-[10px] font-bold text-gray-400 uppercase">List Price</span>
+                                        <button onclick="copyToClip('${item.data.suggestedPrice}', this)" class="text-[10px] font-bold text-blue-500 hover:text-blue-700">COPY</button>
+                                    </div>
+                                    <p class="text-lg font-bold text-green-600">${item.data.suggestedPrice}</p>
+                                </div>
+                                <div class="bg-gray-50 p-3 rounded-lg border border-gray-100 group/field hover:border-blue-200 transition-colors">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <span class="text-[10px] font-bold text-gray-400 uppercase">UPC</span>
+                                        <button onclick="copyToClip('${item.data.upc || ""}', this)" class="text-[10px] font-bold text-blue-500 hover:text-blue-700">COPY</button>
+                                    </div>
+                                    <p class="text-sm font-mono text-gray-600">${item.data.upc || 'N/A'}</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Additional Notes -->
+                            <div class="bg-yellow-50 p-3 rounded-lg border border-yellow-100">
+                                <label class="block text-[10px] font-bold text-yellow-600 uppercase mb-1">Additional Notes / Bin Location</label>
+                                <textarea 
+                                    class="w-full text-sm p-2 border border-yellow-200 rounded focus:ring-1 focus:ring-yellow-500 outline-none resize-none bg-white" 
+                                    rows="2" 
+                                    placeholder="Enter private notes here..."
+                                    oninput="updateAdditionalNotes('${item.id}', this.value)"
+                                >${item.additionalNotes || ''}</textarea>
+                            </div>
+                            
+                            <!-- Listing Modifications -->
+                            <div class="bg-orange-50 p-3 rounded-lg border border-orange-100 mt-2">
+                                <label class="block text-[10px] font-bold text-orange-600 uppercase mb-1">Listing Modifications Needed</label>
+                                <textarea 
+                                    class="w-full text-sm p-2 border border-orange-200 rounded focus:ring-1 focus:ring-orange-500 outline-none resize-none bg-white" 
+                                    rows="2" 
+                                    placeholder="e.g. Change title keywords, update condition..."
+                                    oninput="updateListingMods('${item.id}', this.value)"
+                                >${item.listingMods || ''}</textarea>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="flex gap-2">
+                                <button onclick="copyAll('${item.id}', this)" class="flex-1 bg-slate-800 text-white font-bold py-3 rounded-xl text-sm hover:bg-slate-900 shadow-md transition-all active:scale-95 flex items-center justify-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+                                    Copy All
+                                </button>
+                                <button onclick="sendGmail('${item.id}')" class="w-1/3 bg-red-600 text-white font-bold py-3 rounded-xl text-sm hover:bg-red-700 shadow-md transition-all active:scale-95 flex items-center justify-center gap-2">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"/></svg>
+                                    Gmail
+                                </button>
+                            </div>
+                            
+                            <details class="group/details">
+                                <summary class="flex items-center gap-2 text-xs font-bold text-gray-400 cursor-pointer hover:text-blue-500 select-none py-2">
+                                    <svg class="w-4 h-4 transition-transform group-open/details:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                    Show Description & Keywords
+                                </summary>
+                                <div class="mt-2 space-y-4 pl-2 border-l-2 border-gray-100">
+                                    
+                                    <!-- Description Block -->
+                                    <div>
+                                        <span class="text-[10px] font-bold text-gray-400 uppercase block mb-1">Description</span>
+                                        <p class="text-xs text-gray-600 leading-relaxed whitespace-pre-wrap mb-2">${item.data.description}</p>
+                                        <div class="flex justify-end">
+                                            <button onclick="copyToClip('${item.data.description.replace(/\n/g, "\\n").replace(/'/g, "\\'")}', this)" class="text-[10px] font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded transition-colors">Copy Description</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Keywords Block -->
+                                    <div>
+                                        <span class="text-[10px] font-bold text-gray-400 uppercase block mb-1">Keywords</span>
+                                        <p class="text-xs text-gray-500 font-mono bg-gray-50 p-2 rounded mb-2">${item.data.keywords}</p>
+                                        <div class="flex justify-end">
+                                            <button onclick="copyToClip('${item.data.keywords.replace(/'/g, "\\'")}', this)" class="text-[10px] font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded transition-colors">Copy Keywords</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </details>
+                        </div>
+                    `;
+                }
+
+                // Determine Header Content (Right of Image)
+                if (item.status === 'done') {
+                    headerContent = `
+                        <div class="flex flex-col h-full justify-between gap-2">
+                            <div>
+                                <div class="flex justify-between items-start gap-2 mb-1">
+                                    <span class="text-[10px] font-bold text-blue-400 uppercase tracking-wide">Generated Title</span>
+                                    <button onclick="copyToClip('${item.data.title.replace(/'/g, "\\'")}', this)" class="text-[10px] font-bold text-blue-600 hover:text-blue-800 bg-blue-50 px-2 py-1 rounded">COPY</button>
+                                </div>
+                                <p class="text-sm font-bold text-gray-900 leading-snug">${item.data.title}</p>
+                            </div>
+                            <div class="flex justify-between items-end mt-1">
+                                ${statusBadge}
+                                <button onclick="deleteItem('${item.id}')" class="text-[10px] font-bold text-red-400 hover:text-red-600 hover:bg-red-50 px-2 py-1 rounded transition-colors">Remove</button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    headerContent = `
+                        <div class="flex justify-between items-start">
+                            <p class="text-[10px] text-gray-400 font-mono">Item ID: ${item.id.slice(-6)}</p>
+                            ${statusBadge}
+                        </div>
+                        <div class="mt-auto flex justify-end pt-4">
+                             <button onclick="deleteItem('${item.id}')" class="text-[10px] font-bold text-red-400 hover:text-red-600 hover:bg-red-50 px-2 py-1 rounded transition-colors flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                Remove
+                            </button>
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div id="card-${item.id}" class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 border-2 border-transparent"
+                         ondrop="handleCardDrop(event, '${item.id}')" 
+                         ondragover="handleCardDragOver(event, '${item.id}')"
+                         ondragleave="handleCardDragLeave(event, '${item.id}')">
+                        ${titleHtml}
+                        <div class="p-4 flex gap-4 items-stretch border-b border-gray-50 bg-white">
+                            <!-- Image -->
+                            <div class="relative group cursor-pointer shrink-0" onclick="window.open('${item.preview}')">
+                                <img src="${item.preview}" class="w-24 h-24 object-cover rounded-xl border border-gray-100 shadow-sm group-hover:opacity-90 transition-opacity">
+                            </div>
+                            <!-- Right Column (Title/Status/Actions) -->
+                            <div class="flex-1 min-w-0 py-1 flex flex-col justify-between">
+                                ${headerContent}
+                            </div>
+                        </div>
+                        <!-- Content Body -->
+                        <div class="p-5 bg-white">
+                            ${content}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // --- New Modal Functions ---
+        
+        function openCostModal(id) {
+            pendingResearchId = id;
+            const item = items.find(i => i.id === id);
+            if(item && item.buyCost) {
+                document.getElementById('costInput').value = item.buyCost;
+            } else {
+                document.getElementById('costInput').value = '';
+            }
+            document.getElementById('costModal').classList.remove('hidden');
+            document.getElementById('costInput').focus();
+        }
+
+        function closeCostModal() {
+            document.getElementById('costModal').classList.add('hidden');
+            pendingResearchId = null;
+        }
+
+        function confirmCost() {
+            if (!pendingResearchId) return;
+            const cost = document.getElementById('costInput').value;
+            const item = items.find(i => i.id === pendingResearchId);
+            if(item) {
+                item.buyCost = cost;
+                // Transition to loading immediately
+                analyzeItem(pendingResearchId);
+            }
+            closeCostModal();
+        }
+
+        // Add Research All functionality
+        async function researchAll() {
+            const pendingItems = items.filter(i => i.status === 'pending');
+            if (pendingItems.length === 0) return alert("No pending items to research.");
+            
+            // Ask for global cost if relevant, or just start processing
+            // For simplicity, we process them one by one.
+            // But we need a buy cost for each. If not set, we might need to ask or default to 0.
+            // Let's assume user wants to set cost individually or we can prompt for a "bulk cost" if desired?
+            // The prompt "add research all button" implies automation.
+            // If cost is empty, maybe default to 0 to allow automation?
+            // Or prompt for a common cost? 
+            // Let's prompt for a common cost to apply to all pending items without a cost set.
+            
+            const commonCost = prompt("Enter purchase cost for these items (or leave blank to use existing/0):");
+            const costVal = commonCost ? commonCost.trim() : null;
+
+            for (const item of pendingItems) {
+                if (costVal !== null && !item.buyCost) {
+                    item.buyCost = costVal;
+                }
+                // Update item status to loading to prevent re-clicks
+                item.status = 'loading';
+                render(); 
+                
+                await analyzeItem(item.id);
+                // Small delay to be nice to API
+                await new Promise(r => setTimeout(r, 2000));
+            }
+        }
+
+        async function analyzeItem(id, retryCount = 0) {
+            const item = items.find(i => i.id === id);
+            if (!item) return;
+
+            item.status = 'loading';
+            render();
+
+            const userContext = item.userNotes ? `IMPORTANT USER NOTES: "${item.userNotes}". Incorporate these specific details into the description and pricing/condition analysis.` : "";
+
+            const prompt = `Identify item. ${userContext} Search eBay sold prices using MULTIPLE keyword variations (e.g., '2 pack', 'lot of 2', 'pair', etc.) to determine the TRUE market velocity. Do not rely on a single search term. Estimate standard US ground shipping cost from Zip 97132 (Oregon) to 33101 (South Florida) based on estimated item weight/dimensions. Find a clear stock image URL for this item. Return valid JSON only with keys: title, description, keywords, upc, suggestedPrice, averageSoldPrice, salesFrequency, monthlySales, estimatedShipping, activeListings, stockImageUrl.
+            - Title: STRICTLY between 75-80 characters. Pad with relevant high-volume keywords if needed to meet length. Format: Brand Model Key Specs.
+            - Description: Write a professional, coherent, and concise paragraph describing the item and exactly what is included. Ensure the tone is polished and flows well. MUST END with: "Please refer to the photos for additional details. The item pictured is exactly what you will receive."
+            - Keywords: Comma separated, standard SEO terms.
+            - SuggestedPrice: "XX.XX" (Total price to buyer including shipping).
+            - AverageSoldPrice: "XX.XX" (Average sold price).
+            - EstimatedShipping: "XX.XX" (Cost to ship from 97132 to 33101).
+            - SalesFrequency: Aggregate sales from ALL keyword variations to determine true demand. Define as Very High (20+ sold/week), High (10+ sold/week), Medium (5-10 sold/week), or Low (<2 sold/month).
+            - MonthlySales: "X sold/month".
+            - activeListings: Estimate total active listings (e.g. "150+ active").
+            - stockImageUrl: URL of a clean white-background stock photo if found.
+            - No dashes in title/description.`;
+            
+            try {
+                if (!apiKey) { toggleKeyModal(); throw new Error("Waiting for API Key..."); }
+
+                const imagesPayload = item.images.map(img => ({
+                    inlineData: { mimeType: "image/jpeg", data: img.base64 }
+                }));
+
+                const payload = {
+                    contents: [{ 
+                        role: "user", 
+                        parts: [{ text: prompt }, ...imagesPayload] 
+                    }],
+                    tools: [{ google_search: {} }] 
+                };
+
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+                });
+
+                if (response.status === 429) {
+                    if (retryCount < 2) {
+                        item.errorMsg = "Rate limited... retrying in 3s";
+                        render();
+                        await new Promise(r => setTimeout(r, 3000));
+                        return analyzeItem(id, retryCount + 1);
+                    }
+                    toggleKeyModal();
+                    throw new Error("Quota Exceeded.");
+                }
+                
+                if (!response.ok) throw new Error(`API Error: ${response.status}`);
+
+                const data = await response.json();
+                const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (!text) throw new Error("No data returned.");
+
+                let cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
+                const firstBrace = cleanJson.indexOf('{');
+                const lastBrace = cleanJson.lastIndexOf('}');
+                if (firstBrace !== -1 && lastBrace !== -1) cleanJson = cleanJson.substring(firstBrace, lastBrace + 1);
+
+                item.data = JSON.parse(cleanJson);
+                
+                // Auto-fill shipping estimate if available and not already set
+                if (item.data.estimatedShipping && !item.shipCost) {
+                    item.shipCost = parseFloat(item.data.estimatedShipping.replace(/[^0-9.]/g, '')) || 0;
+                }
+                
+                item.status = 'done';
+
+            } catch (err) {
+                console.error(err);
+                item.status = 'error';
+                item.errorMsg = err.message;
+            }
+            render();
+        }
+
+        function deleteItem(id) { items = items.filter(i => i.id !== id); if(items.length===0) emptyState.classList.remove('hidden'); render(); }
+        function toggleKeyModal() { keyModal.classList.toggle('hidden'); apiKeyInput.value = apiKey === "AIzaSyCf7L5B4uNxQy8a9-3MfGK7AYkCqHBg-Wc" ? "" : apiKey; if(!keyModal.classList.contains('hidden')) apiKeyInput.focus(); }
+        function saveKey() { const val = apiKeyInput.value.trim(); if(val) { apiKey = val; localStorage.setItem('gemini_api_key_v2', val); toggleKeyModal(); alert("Key Saved!"); } else alert("Enter key."); }
+        function copyToClip(text, btn) { const el = document.createElement('textarea'); el.value = text; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el); const o = btn.innerText; btn.innerText = "✓"; setTimeout(() => btn.innerText = o, 1000); }
+        
+        function copyAll(id, btn) {
+            const item = items.find(i => i.id === id);
+            if (!item) return;
+            const d = item.data;
+            const table = document.createElement('table');
+            const row = document.createElement('tr');
+            
+            // Image Cell - Use Stock Image if available, else user preview
+            const imgCell = document.createElement('td');
+            const img = document.createElement('img');
+            img.src = d.stockImageUrl || item.preview;
+            img.width = 100;
+            imgCell.appendChild(img);
+            row.appendChild(imgCell);
+
+            // Data Cells - Included additional notes
+            [d.title, d.description, d.keywords, d.upc, d.suggestedPrice, item.additionalNotes || '', item.listingMods || ''].forEach(txt => {
+                const td = document.createElement('td');
+                td.innerText = txt || '';
+                row.appendChild(td);
+            });
+            table.appendChild(row);
+            document.body.appendChild(table);
+            const range = document.createRange();
+            range.selectNode(table);
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+            try { document.execCommand('copy'); const o = btn.innerText; btn.innerText = "✓ Copied"; setTimeout(() => btn.innerText = o, 1500); } catch (e) { alert("Copy failed"); }
+            sel.removeAllRanges();
+            document.body.removeChild(table);
+        }
+
+        function sendGmail(id) {
+            const item = items.find(i => i.id === id);
+            if (!item) return;
+            const d = item.data;
+
+            const sellPrice = parseFloat(d.suggestedPrice.replace(/[^0-9.]/g, '')) || 0;
+            const buyCost = parseFloat(item.buyCost) || 0;
+            const shipCost = parseFloat(item.shipCost) || 0;
+            const fees = (sellPrice * 0.1325) + 0.30;
+            const profit = sellPrice - fees - shipCost - buyCost;
+            
+            const subject = encodeURIComponent(d.title);
+            
+            // Reorganized email body
+            const bodyText = `
+Title: 
+${d.title}
+
+Description:
+${d.description}
+
+Keywords:
+${d.keywords}
+
+UPC: ${d.upc || 'N/A'}
+
+Suggested Price: ${d.suggestedPrice}
+
+Specific Details (Pre-Research):
+${item.userNotes || 'None'}
+
+Additional Notes / Bin Location:
+${item.additionalNotes || 'None'}
+
+Listing Modifications Needed:
+${item.listingMods || 'None'}
+
+
+_______________________________________
+FINANCIAL SUMMARY
+
+EST. NET PROFIT: $${profit.toFixed(2)}
+
+COST BREAKDOWN:
+- Purchase Cost: $${buyCost.toFixed(2)}
+- Shipping Cost: $${shipCost.toFixed(2)}
+- eBay Fees (est): $${fees.toFixed(2)}
+            `.trim();
+            
+            const body = encodeURIComponent(bodyText);
+            const url = `https://mail.google.com/mail/?view=cm&fs=1&su=${subject}&body=${body}`;
+            window.open(url, '_blank');
+        }
+
+        function sendAllGmail() {
+            const doneItems = items.filter(i => i.status === 'done');
+            if (doneItems.length === 0) return alert("No completed items to send.");
+            
+            const subject = encodeURIComponent(`Bulk eBay Listing x${doneItems.length}`);
+            let bodyParts = [];
+
+            doneItems.forEach((item, index) => {
+                const d = item.data;
+                const sellPrice = parseFloat(d.suggestedPrice.replace(/[^0-9.]/g, '')) || 0;
+                const buyCost = parseFloat(item.buyCost) || 0;
+                const shipCost = parseFloat(item.shipCost) || 0;
+                const fees = (sellPrice * 0.1325) + 0.30;
+                const profit = sellPrice - fees - shipCost - buyCost;
+
+                const itemText = `
+ITEM #${index + 1}
+=======================================
+Title: 
+${d.title}
+
+Description:
+${d.description}
+
+Keywords:
+${d.keywords}
+
+UPC: ${d.upc || 'N/A'}
+
+Suggested Price: ${d.suggestedPrice}
+
+Specific Details (Pre-Research):
+${item.userNotes || 'None'}
+
+Additional Notes / Bin Location:
+${item.additionalNotes || 'None'}
+
+Listing Modifications Needed:
+${item.listingMods || 'None'}
+
+FINANCIAL SUMMARY
+Est. Net Profit: $${profit.toFixed(2)}
+(Buy: $${buyCost.toFixed(2)} | Ship: $${shipCost.toFixed(2)} | Fees: $${fees.toFixed(2)})
+=======================================
+                `.trim();
+                bodyParts.push(itemText);
+            });
+
+            const body = encodeURIComponent(bodyParts.join('\n\n\n'));
+            const url = `https://mail.google.com/mail/?view=cm&fs=1&su=${subject}&body=${body}`;
+            window.open(url, '_blank');
+        }
+    </script>
+</body>
+</html>
