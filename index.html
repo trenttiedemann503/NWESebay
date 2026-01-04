@@ -129,7 +129,8 @@
 
     <script>
         // --- Configuration ---
-        let apiKey = localStorage.getItem('gemini_api_key_v2') || "AIzaSyCf7L5B4uNxQy8a9-3MfGK7AYkCqHBg-Wc";
+        // Secure default: Empty. User provides key via modal.
+        let apiKey = localStorage.getItem('gemini_api_key_v2') || "";
         let items = [];
         let pendingResearchId = null;
 
@@ -181,7 +182,6 @@
             dropZoneBatch.classList.remove('border-blue-500', 'bg-blue-50');
             await processFiles(Array.from(e.dataTransfer.files), 'batch');
         };
-
 
         // --- Core Application Logic ---
 
@@ -313,7 +313,6 @@
             const item = items.find(i => i.id === itemId);
             if (!item) return;
 
-            // Simple visual cue could be added, but for now just process
             for (const file of files) {
                 try {
                     const jpegDataUrl = await resizeAndCompressImage(file);
@@ -389,7 +388,6 @@
                     const buyCost = parseFloat(item.buyCost) || 0;
                     const shipCost = parseFloat(item.shipCost) || 0;
                     
-                    // eBay Fees: ~13.25% + $0.30 fixed
                     const fees = (sellPrice * 0.1325) + 0.30;
                     const profit = sellPrice - fees - shipCost - buyCost;
                     
@@ -431,7 +429,6 @@
             } else {
                 bulkActions.classList.add('hidden');
             }
-
 
             itemsGrid.innerHTML = items.map(item => {
                 let content = '';
@@ -771,7 +768,7 @@
             - SuggestedPrice: "XX.XX" (Total price to buyer including shipping).
             - AverageSoldPrice: "XX.XX" (Average sold price).
             - EstimatedShipping: "XX.XX" (Cost to ship from 97132 to 33101).
-            - SalesFrequency: Aggregate sales from ALL keyword variations to determine true demand. Define as Very High (20+ sold/week), High (10+ sold/week), Medium (5-10 sold/week), or Low (<2 sold/month).
+            - SalesFrequency: Define as Very High (20+ sold/week), High (10+ sold/week), Medium (5-10 sold/week), or Low (<2 sold/month).
             - MonthlySales: "X sold/month".
             - activeListings: Estimate total active listings (e.g. "150+ active").
             - stockImageUrl: URL of a clean white-background stock photo if found.
